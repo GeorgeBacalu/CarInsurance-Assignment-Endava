@@ -13,7 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         modelBuilder.Entity<Car>()
             .HasIndex(c => c.Vin)
-            .IsUnique(false); // TODO: set true and handle conflicts
+            .IsUnique();
 
         modelBuilder.Entity<InsurancePolicy>()
             .Property(p => p.StartDate)

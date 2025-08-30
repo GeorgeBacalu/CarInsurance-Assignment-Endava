@@ -1,5 +1,7 @@
 using CarInsurance.Api.Data;
-using CarInsurance.Api.Dtos;
+using CarInsurance.Api.Dtos.Common;
+using CarInsurance.Api.Dtos.Requests;
+using CarInsurance.Api.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarInsurance.Api.Services;
@@ -11,8 +13,7 @@ public class CarService(AppDbContext db)
     public async Task<List<CarDto>> ListCarsAsync()
     {
         return await _db.Cars.Include(c => c.Owner)
-            .Select(c => new CarDto(c.Id, c.Vin, c.Make, c.Model, c.YearOfManufacture,
-                                    c.OwnerId, c.Owner.Name, c.Owner.Email))
+            .Select(c => new CarDto(c.Id, c.Vin, c.Make, c.Model, c.YearOfManufacture, c.OwnerId, c.Owner.Name, c.Owner.Email))
             .ToListAsync();
     }
 
@@ -21,10 +22,14 @@ public class CarService(AppDbContext db)
         var carExists = await _db.Cars.AnyAsync(c => c.Id == carId);
         if (!carExists) throw new KeyNotFoundException($"Car {carId} not found");
 
-        return await _db.Policies.AnyAsync(p =>
-            p.CarId == carId &&
-            p.StartDate <= date &&
-            (p.EndDate == null || p.EndDate >= date)
-        );
+        return await _db.Policies.AnyAsync(p => p.CarId == carId && p.StartDate <= date && (p.EndDate == null || p.EndDate >= date));
+    }
+
+    public async Task AddCarAsync(AddCarRequest request)
+    {
+        var car = request.ToCar();
+
+        await _db.Cars.AddAsync(car);
+        await _db.SaveChangesAsync();
     }
 }
