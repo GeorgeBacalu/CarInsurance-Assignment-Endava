@@ -22,7 +22,7 @@ public class CarService(AppDbContext db)
         var carExists = await _db.Cars.AnyAsync(c => c.Id == carId);
         if (!carExists) throw new KeyNotFoundException($"Car {carId} not found");
 
-        return await _db.Policies.AnyAsync(p => p.CarId == carId && p.StartDate <= date && (p.EndDate == null || p.EndDate >= date));
+        return await _db.Policies.AnyAsync(p => p.CarId == carId && p.StartDate <= date && p.EndDate >= date);
     }
 
     public async Task AddCarAsync(AddCarRequest request)
