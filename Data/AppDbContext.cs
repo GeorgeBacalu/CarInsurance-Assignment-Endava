@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Owner> Owners => Set<Owner>();
     public DbSet<Car> Cars => Set<Car>();
     public DbSet<InsurancePolicy> Policies => Set<InsurancePolicy>();
+    public DbSet<InsuranceClaim> Claims => Set<InsuranceClaim>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +46,11 @@ public static class SeedData
             new InsurancePolicy { CarId = car1.Id, Provider = "Allianz", StartDate = new DateOnly(2024, 1, 1), EndDate = new DateOnly(2024, 12, 31) },
             new InsurancePolicy { CarId = car1.Id, Provider = "Groupama", StartDate = new DateOnly(2025, 1, 1), EndDate = new DateOnly(2025, 12, 31) },
             new InsurancePolicy { CarId = car2.Id, Provider = "Allianz", StartDate = new DateOnly(2025, 3, 1), EndDate = new DateOnly(2025, 9, 30) }
+        );
+        db.Claims.AddRange(
+            new InsuranceClaim { CarId = car1.Id, Date = new DateOnly(2024, 11, 20), Description = "Vehicle theft reported to authorities", Amount = 8000m },
+            new InsuranceClaim { CarId = car1.Id, Date = new DateOnly(2024, 6, 15), Description = "Rear-end collision with another car in the parking place", Amount = 1500m },
+            new InsuranceClaim { CarId = car2.Id, Date = new DateOnly(2025, 4, 10), Description = "Windshield cracked and replaced", Amount = 300m }
         );
         db.SaveChanges();
     }

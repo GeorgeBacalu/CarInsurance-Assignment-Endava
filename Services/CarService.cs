@@ -1,6 +1,7 @@
 using CarInsurance.Api.Data;
 using CarInsurance.Api.Dtos.Common;
 using CarInsurance.Api.Dtos.Requests;
+using CarInsurance.Api.Dtos.Responses;
 using CarInsurance.Api.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,6 +31,28 @@ public class CarService(AppDbContext db)
         var car = request.ToCar();
 
         await _db.Cars.AddAsync(car);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task<GetCarHistoryResponse> GetCarHistoryAsync(long carId)
+    {
+        var policies = await _db.Policies.Where(p => p.CarId == carId)
+            .OrderBy(p => p.StartDate)
+            .Select(p => new InsurancePolicyDto(p.Id, p.Provider, p.StartDate, p.EndDate))
+            .ToListAsync();
+        var claims = await _db.Claims.Where(c => c.CarId == carId)
+            .OrderBy(c => c.Date)
+            .Select(c => new InsuranceClaimDto(c.Id, c.Date, c.Description, c.Amount))
+            .ToListAsync();
+
+        return new GetCarHistoryResponse(policies, claims);
+    }
+
+    public async Task AddInsuranceClaimAsync(long carId, AddInsuranceClaimRequest request)
+    {
+        var insuranceClaim = request.ToInsuranceClaim(carId);
+
+        await _db.AddAsync(insuranceClaim);
         await _db.SaveChangesAsync();
     }
 }

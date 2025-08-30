@@ -39,4 +39,15 @@ public class CarsController(CarService service) : ControllerBase
         await _service.AddCarAsync(request);
         return Created(string.Empty, new MessageResponse("Car added successfully"));
     }
+
+    [HttpGet("{carId:long}/history")]
+    public async Task<ActionResult<GetCarHistoryResponse>> GetCarHistory(long carId)
+        => Ok(await _service.GetCarHistoryAsync(carId));
+
+    [HttpPost("{carId:long}/claims")]
+    public async Task<ActionResult<MessageResponse>> AddInsuranceClaim(long carId, AddInsuranceClaimRequest request)
+    {
+        await _service.AddInsuranceClaimAsync(carId, request);
+        return Created(string.Empty, new MessageResponse("Insurance claim registered successfully"));
+    }
 }

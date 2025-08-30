@@ -11,5 +11,6 @@ public class Car
     public long OwnerId { get; set; }
     public Owner Owner { get; set; } = default!;
 
-    public ICollection<InsurancePolicy> Policies { get; set; } = new List<InsurancePolicy>();
+    public ICollection<InsurancePolicy> Policies { get; set; } = [];
+    public ICollection<InsuranceClaim> Claims { get; set; } = [];
 }
