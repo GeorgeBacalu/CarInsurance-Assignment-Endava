@@ -4,6 +4,7 @@ using CarInsurance.Api.Dtos.Requests;
 using CarInsurance.Api.Dtos.Responses;
 using CarInsurance.Api.Exceptions;
 using CarInsurance.Api.Extensions;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarInsurance.Api.Services;
@@ -52,8 +53,26 @@ public class CarService(AppDbContext db)
         return new GetCarHistoryResponse(policies, claims);
     }
 
+    public async Task AddInsurancePolicyAsync(long carId, AddInsurancePolicyRequest request)
+    {
+        var carExists = await _db.Cars.AnyAsync(c => c.Id == carId);
+        if (!carExists) throw new KeyNotFoundException($"Car {carId} not found");
+
+        var overlapsWithOtherPolicies = await _db.Policies.AnyAsync(p => p.CarId == carId && p.StartDate <= request.EndDate && p.EndDate >= request.StartDate);
+        if (overlapsWithOtherPolicies)
+            throw new BadRequestException("New policy overlaps an existing policy for this car");
+
+        var insurancePolicy = request.ToInsurancePolicy(carId);
+
+        await _db.AddAsync(insurancePolicy);
+        await _db.SaveChangesAsync();
+    }
+
     public async Task AddInsuranceClaimAsync(long carId, AddInsuranceClaimRequest request)
     {
+        var carExists = await _db.Cars.AnyAsync(c => c.Id == carId);
+        if (!carExists) throw new KeyNotFoundException($"Car {carId} not found");
+
         var insuranceClaim = request.ToInsuranceClaim(carId);
 
         await _db.AddAsync(insuranceClaim);

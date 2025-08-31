@@ -1,7 +1,10 @@
 using CarInsurance.Api.Data;
+using CarInsurance.Api.Dtos.Requests;
 using CarInsurance.Api.Middlewares;
 using CarInsurance.Api.Services;
 using CarInsurance.Api.Workers;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +21,14 @@ builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddScoped<CarService>();
 
 builder.Services.AddControllers();
+
+builder.Services.AddFluentValidationAutoValidation(options =>
+{
+    options.DisableDataAnnotationsValidation = true;
+});
+builder.Services.AddValidatorsFromAssemblyContaining<AddInsurancePolicyRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<AddInsuranceClaimRequestValidator>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

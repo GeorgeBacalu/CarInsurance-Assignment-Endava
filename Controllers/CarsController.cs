@@ -34,6 +34,13 @@ public class CarsController(CarService service) : ControllerBase
     public async Task<ActionResult<GetCarHistoryResponse>> GetCarHistory(long carId)
         => Ok(await _service.GetCarHistoryAsync(carId));
 
+    [HttpPost("{carId:long}/policies")]
+    public async Task<ActionResult<MessageResponse>> AddInsurancePolicy(long carId, AddInsurancePolicyRequest request)
+    {
+        await _service.AddInsurancePolicyAsync(carId, request);
+        return Created(string.Empty, new MessageResponse("Insurance policy registered successfully"));
+    }
+
     [HttpPost("{carId:long}/claims")]
     public async Task<ActionResult<MessageResponse>> AddInsuranceClaim(long carId, AddInsuranceClaimRequest request)
     {
