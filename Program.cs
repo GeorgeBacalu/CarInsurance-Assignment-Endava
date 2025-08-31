@@ -1,6 +1,7 @@
 using CarInsurance.Api.Data;
 using CarInsurance.Api.Middlewares;
 using CarInsurance.Api.Services;
+using CarInsurance.Api.Workers;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,8 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseSqlite(builder.Configuration.GetConnectionString("Default"));
 });
+
+builder.Services.AddHostedService<PolicyExpirationLoggingWorker>();
 
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
