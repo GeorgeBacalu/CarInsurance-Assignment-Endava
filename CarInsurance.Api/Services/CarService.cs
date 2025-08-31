@@ -58,8 +58,8 @@ public class CarService(AppDbContext db)
         var carExists = await _db.Cars.AnyAsync(c => c.Id == carId);
         if (!carExists) throw new KeyNotFoundException($"Car {carId} not found");
 
-        var overlapsWithOtherPolicies = await _db.Policies.AnyAsync(p => p.CarId == carId && p.StartDate <= request.EndDate && p.EndDate >= request.StartDate);
-        if (overlapsWithOtherPolicies)
+        var overlapsOtherPolicy = await _db.Policies.AnyAsync(p => p.CarId == carId && p.StartDate <= request.EndDate && p.EndDate >= request.StartDate);
+        if (overlapsOtherPolicy)
             throw new BadRequestException("New policy overlaps an existing policy for this car");
 
         var insurancePolicy = request.ToInsurancePolicy(carId);

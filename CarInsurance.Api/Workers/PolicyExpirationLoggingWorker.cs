@@ -9,7 +9,7 @@ public class PolicyExpirationLoggingWorker : BaseBackgroundWorker
     private readonly ILogger<PolicyExpirationLoggingWorker> _logger;
 
     public PolicyExpirationLoggingWorker(IServiceScopeFactory scopeFactory, ILogger<PolicyExpirationLoggingWorker> logger)
-        : base(scopeFactory, nameof(PolicyExpirationLoggingWorker), "0 * * * * *") => _logger = logger;
+        : base(scopeFactory, nameof(PolicyExpirationLoggingWorker), "0 0 * * * *") => _logger = logger;
 
     protected override async Task RunIteration(CancellationToken token)
     {
@@ -31,8 +31,8 @@ public class PolicyExpirationLoggingWorker : BaseBackgroundWorker
             if (expiryTime < windowStartTime || expiryTime > windowEndTime)
                 continue;
 
-            var wasPolicyExpirationTracked = await db.PolicyExpiryLogs.AnyAsync(x => x.PolicyId == policy.Id, token);
-            if (wasPolicyExpirationTracked)
+            var wasPolicyExpiryTracked = await db.PolicyExpiryLogs.AnyAsync(x => x.PolicyId == policy.Id, token);
+            if (wasPolicyExpiryTracked)
                 continue;
 
             var policyExpiryLog = new PolicyExpiryLog
