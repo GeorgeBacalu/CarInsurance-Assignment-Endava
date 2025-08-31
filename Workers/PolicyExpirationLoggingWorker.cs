@@ -1,5 +1,6 @@
 ﻿using CarInsurance.Api.Data;
 using CarInsurance.Api.Dtos.Common;
+using CarInsurance.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarInsurance.Api.Workers;
@@ -8,7 +9,7 @@ public class PolicyExpirationLoggingWorker : BaseBackgroundWorker
     private readonly ILogger<PolicyExpirationLoggingWorker> _logger;
 
     public PolicyExpirationLoggingWorker(IServiceScopeFactory scopeFactory, ILogger<PolicyExpirationLoggingWorker> logger)
-        : base(scopeFactory, nameof(PolicyExpirationLoggingWorker), "0 0 * * * *") => _logger = logger;
+        : base(scopeFactory, nameof(PolicyExpirationLoggingWorker), "0 * * * * *") => _logger = logger;
 
     protected override async Task RunIteration(CancellationToken token)
     {
@@ -27,8 +28,23 @@ public class PolicyExpirationLoggingWorker : BaseBackgroundWorker
         foreach (var policy in upcomingPolicyExpiry)
         {
             var expiryTime = policy.EndDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc).AddDays(1);
-            if (expiryTime >= windowStartTime && expiryTime <= windowEndTime)
-                _logger.LogInformation("{Policy} - expired", policy);
+            if (expiryTime < windowStartTime || expiryTime > windowEndTime)
+                continue;
+
+            var wasPolicyExpirationTracked = await db.PolicyExpiryLogs.AnyAsync(x => x.PolicyId == policy.Id, token);
+            if (wasPolicyExpirationTracked)
+                continue;
+
+            var policyExpiryLog = new PolicyExpiryLog
+            {
+                PolicyId = policy.Id,
+                EndDate = policy.EndDate,
+                LoggedAt = windowEndTime
+            };
+            await db.PolicyExpiryLogs.AddAsync(policyExpiryLog, token);
+            await db.SaveChangesAsync(token);
+
+            _logger.LogInformation("{Policy} - expired", policy);
         }
     }
 }

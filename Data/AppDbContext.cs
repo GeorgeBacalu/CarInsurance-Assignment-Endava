@@ -9,6 +9,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Car> Cars => Set<Car>();
     public DbSet<InsurancePolicy> Policies => Set<InsurancePolicy>();
     public DbSet<InsuranceClaim> Claims => Set<InsuranceClaim>();
+    public DbSet<PolicyExpiryLog> PolicyExpiryLogs => Set<PolicyExpiryLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,6 +24,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<InsurancePolicy>()
             .Property(p => p.EndDate)
             .IsRequired();
+
+        modelBuilder.Entity<PolicyExpiryLog>()
+            .HasIndex(p => p.PolicyId)
+            .IsUnique();
     }
 }
 
