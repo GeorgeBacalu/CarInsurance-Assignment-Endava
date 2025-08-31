@@ -2,6 +2,7 @@ using CarInsurance.Api.Data;
 using CarInsurance.Api.Dtos.Common;
 using CarInsurance.Api.Dtos.Requests;
 using CarInsurance.Api.Dtos.Responses;
+using CarInsurance.Api.Exceptions;
 using CarInsurance.Api.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,12 +19,15 @@ public class CarService(AppDbContext db)
             .ToListAsync();
     }
 
-    public async Task<bool> IsInsuranceValidAsync(long carId, DateOnly date)
+    public async Task<bool> IsInsuranceValidAsync(long carId, string date)
     {
+        if (!DateOnly.TryParseExact(date, "yyyy-MM-dd", out var parsedDate))
+            throw new BadRequestException("Invalid date format. It should be formatted as 'YYYY-MM-DD'.");
+
         var carExists = await _db.Cars.AnyAsync(c => c.Id == carId);
         if (!carExists) throw new KeyNotFoundException($"Car {carId} not found");
 
-        return await _db.Policies.AnyAsync(p => p.CarId == carId && p.StartDate <= date && p.EndDate >= date);
+        return await _db.Policies.AnyAsync(p => p.CarId == carId && p.StartDate <= parsedDate && p.EndDate >= parsedDate);
     }
 
     public async Task AddCarAsync(AddCarRequest request)

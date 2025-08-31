@@ -1,4 +1,5 @@
 using CarInsurance.Api.Data;
+using CarInsurance.Api.Middlewares;
 using CarInsurance.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,8 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseSqlite(builder.Configuration.GetConnectionString("Default"));
 });
+
+builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
 builder.Services.AddScoped<CarService>();
 
@@ -33,6 +36,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
 
 app.Run();
