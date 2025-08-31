@@ -39,7 +39,7 @@ public class CarService(AppDbContext db)
         await _db.SaveChangesAsync();
     }
 
-    public async Task<GetCarHistoryResponse> GetCarHistoryAsync(long carId)
+    public async Task<CarHistoryResponse> GetCarHistoryAsync(long carId)
     {
         var policies = await _db.Policies.Where(p => p.CarId == carId)
             .OrderBy(p => p.StartDate)
@@ -50,7 +50,7 @@ public class CarService(AppDbContext db)
             .Select(c => new InsuranceClaimDto(c.Id, c.Date, c.Description, c.Amount))
             .ToListAsync();
 
-        return new GetCarHistoryResponse(policies, claims);
+        return new CarHistoryResponse(policies, claims);
     }
 
     public async Task AddInsurancePolicyAsync(long carId, AddInsurancePolicyRequest request)

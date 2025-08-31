@@ -31,7 +31,7 @@ public class CarsController(CarService service) : ControllerBase
     }
 
     [HttpGet("{carId:long}/history")]
-    public async Task<ActionResult<GetCarHistoryResponse>> GetCarHistory(long carId)
+    public async Task<ActionResult<CarHistoryResponse>> GetCarHistory(long carId)
         => Ok(await _service.GetCarHistoryAsync(carId));
 
     [HttpPost("{carId:long}/policies")]
